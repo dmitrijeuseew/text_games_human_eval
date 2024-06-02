@@ -1,0 +1,146 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.buttonlist {
+  display: flex;
+  flex-direction: column;
+}
+
+.gamebutton {
+  width: 300px;
+  font-size: 24px;
+  margin-bottom: 10px;
+  background: #7ec7ff;
+}
+
+.gamebutton:hover {
+  background-color:#00ad62;
+}
+
+.chatpage {
+  display: flex;
+  flex-direction: column;
+}
+
+.buttonback {
+  margin-bottom: 20px;
+  width: 100px;
+  background: #7ec7ff;
+}
+
+.buttonback:hover {
+  background-color:#00ad62;
+}
+
+.observation {
+  text-align: justify;
+}
+
+.inventory {
+  text-align: left;
+}
+
+.actions {
+  display: grid;
+  column-gap: 5px;
+  row-gap: 5px;
+  grid-auto-flow: column;
+  width: 95%;
+  justify-content: left;
+  margin-bottom: 10px;
+}
+
+.actbutton {
+  width: max-content;
+  height: max-content;
+  background-color:#4800ad;
+  color: white;
+}
+
+.actbutton:hover {
+  background-color:#c51717;
+}
+
+.state {
+  background-color:#b1e0eb;
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 2px;
+}
+
+.chatbox {
+  width: 600px;
+  height: 70vh;
+  border-radius: 15px;
+  padding: 15px;
+  font-size: 16px;
+  border: solid 2px;
+  background-color:#e5fff4;
+  display: flex;
+  flex-direction: column;
+}
+
+.scorebox {
+  height: 8%;
+  margin-bottom: 15px;
+}
+
+.score {
+  width: max-content;
+  background-color:#0b7555;
+  color: white;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.uttr {
+  height: 90%;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+.logo {
+  height: 12em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
