@@ -2,6 +2,7 @@ import json
 import os
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from utils.envs_cfg import ENV_NAMES, FIRST_OBS
@@ -12,8 +13,25 @@ from utils.utils import observation_processing, simulate_environment_actions, ac
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://146.0.79.240"
+]
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+env_id2name = {1: "hunt", 2: "cook", 3: "clean"}
+
 class Payload(BaseModel):
-    env_name: str
+    env_id: int
     user_id: str
     action: str
 
@@ -39,32 +57,41 @@ def process_action_get_reward(action, env, info, env_name):
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
-envs_dict, scores_dict, steps_dict = {}, {}, {}
+envs_dict, info_dict, scores_dict, steps_dict = {}, {}, {}, {}
 
 @app.post("/play")
 async def play(payload: Payload):
-    env_name = payload.env_name
+    env_id = payload.env_id
+    env_name = env_id2name[env_id]
     user_id = payload.user_id
     action = payload.action
-    filename = f"logs/{user_id}_{env_name}.json"
+    files = os.listdir("logs")
+    pattern = f"{user_id}_{env_name}"
+    attempt = len([flname for flname in files if pattern in flname])
     if not action:
+        attempt += 1
+        filename = f"logs/{user_id}_{env_name}_{attempt}.json"
         if os.path.exists(filename):
             os.remove(filename)
         env = TextWorldWrapper(ENV_NAMES[env_name])
         observation, info = env.reset()
         if user_id not in envs_dict:
             envs_dict[user_id] = {}
+            info_dict[user_id] = {}
             scores_dict[user_id] = {}
             steps_dict[user_id] = {}
         envs_dict[user_id][env_name] = env
+        info_dict[user_id][env_name] = info
         scores_dict[user_id][env_name] = 0
         steps_dict[user_id][env_name] = 0
     else:
+        filename = f"logs/{user_id}_{env_name}_{attempt}.json"
         steps_dict[user_id][env_name] += 1
         if "cook" in env_name:
             action = action_deprocessing(action)
         observation, step_reward, done, info = process_action_get_reward(
-            action, envs_dict[user_id][env_name], info, env_name)
+            action, envs_dict[user_id][env_name], info_dict[user_id][env_name], env_name)
+        info_dict[user_id][env_name] = info
         scores_dict[user_id][env_name] += step_reward
 
     observation = observation.split("$$$")[-1]
@@ -72,10 +99,12 @@ async def play(payload: Payload):
     if steps_dict[user_id][env_name] == 0:
         observation += FIRST_OBS[env_name]
     observation = "Game step #" + str(steps_dict[user_id][env_name] + 1) + "\n" + observation
-    inventory = env.get_inventory()
+    inventory = envs_dict[user_id][env_name].get_inventory()
 
-    valid_actions = [action_processing(action) for action in env.get_valid_actions()] if "cook" in env_name \
-        else env.get_valid_actions()
+    valid_actions = [
+        action_processing(action)
+        for action in envs_dict[user_id][env_name].get_valid_actions()
+    ] if "cook" in env_name else envs_dict[user_id][env_name].get_valid_actions()
 
     if os.path.exists(filename):
         with open(filename, 'r') as inp:
@@ -88,7 +117,7 @@ async def play(payload: Payload):
         json.dump(states, out, indent=2)
 
     return {"observation": observation,
-            "actions": valid_actions,
+            "actions": [{"action": action} for action in valid_actions],
             "inventory": inventory,
             "score": scores_dict[user_id][env_name]}
 

@@ -48,7 +48,8 @@
   display: grid;
   column-gap: 5px;
   row-gap: 5px;
-  grid-auto-flow: column;
+  grid-template-columns: auto auto;
+  position: relative;
   width: 95%;
   justify-content: left;
   margin-bottom: 10px;
@@ -59,6 +60,9 @@
   height: max-content;
   background-color:#4800ad;
   color: white;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 5px;
 }
 
 .actbutton:hover {
@@ -73,9 +77,42 @@
   padding-bottom: 2px;
 }
 
+@media only screen and (pointer: coarse) and (min-width: 480px) and (max-width: 710px){
+  .chatbox {
+    width: 480px;
+    height: 480px;
+  }
+}
+
+@media only screen and (pointer: coarse) and (min-width: 720px){
+  .chatbox {
+    width: 700px;
+    height: 700px;
+  }
+}
+
+@media only screen and (pointer: coarse) and (min-width: 1080px){
+  .chatbox {
+    width: 1000px;
+    height: 1000px;
+  }
+}
+
+@media only screen and (pointer: coarse) and (min-width: 1200px){
+  .chatbox {
+    width: 1200px;
+    height: 1200px;
+  }
+}
+
+@media only screen and not (pointer: coarse){
+  .chatbox {
+    width: 600px;
+    height: 70vh;
+  }
+}
+
 .chatbox {
-  width: 600px;
-  height: 70vh;
   border-radius: 15px;
   padding: 15px;
   font-size: 16px;
@@ -98,6 +135,18 @@
   border-radius: 5px;
 }
 
+.startgame {
+  width: max-content;
+  background-color:#0b7555;
+  color: white;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.startgame:hover {
+  background-color:#c51717;
+}
+
 .uttr {
   height: 90%;
   overflow-y: auto;
@@ -107,6 +156,10 @@
   width: 100%;
   bottom: 0;
   left: 0;
+}
+
+.startend {
+  height: 8%;
 }
 
 .logo {
