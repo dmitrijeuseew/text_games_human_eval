@@ -63,7 +63,7 @@ envs_dict, info_dict, scores_dict, steps_dict = {}, {}, {}, {}
 async def play(payload: Payload):
     env_id = payload.env_id
     env_name = env_id2name[env_id]
-    user_id = payload.user_id
+    user_id = payload.user_id.replace("  ", " ").replace(" ", "_")
     action = payload.action
     files = os.listdir("logs")
     pattern = f"{user_id}_{env_name}"
@@ -116,10 +116,14 @@ async def play(payload: Payload):
     with open(filename, 'w') as out:
         json.dump(states, out, indent=2)
 
-    return {"observation": observation,
+    is_end = "* the end *" in observation.lower() or scores_dict[user_id][env_name] >= 22
+    observation_lines = observation.split("\n")
+    observation_lines = [{"line": line} for line in observation_lines if len(line.strip()) > 0]
+    return {"observation": observation_lines,
             "actions": [{"action": action} for action in valid_actions],
             "inventory": inventory,
-            "score": scores_dict[user_id][env_name]}
+            "score": scores_dict[user_id][env_name],
+            "is_end": is_end}
 
 
 uvicorn.run(app, host='0.0.0.0', port=8001)

@@ -187,7 +187,6 @@ def find_relation(spatial_graph, parent, loc, first):
                 return reverse[find_relation(spatial_graph, loc, parent, False)]
 
 
-
 def tupleize_state(state):
     """
     Convert state list with dictionaries to a tuple form that can be used in sets.
@@ -202,30 +201,31 @@ def find_changes(prev_state, current_state):
     current_set = tupleize_state(current_state)
     
     env_change = current_set - prev_set
+    env_backward = prev_set - current_set
     
     # Convert tuples back to original form (item, location, properties dict)
     env_change = [(item, loc, dict(props)) for item, loc, props in env_change]
+    env_backward = [(item, loc, dict(props)) for item, loc, props in env_backward]
     
-    return env_change
+    return env_change, env_backward
 
-def get_reward_for_changes(env_change, win_cond_take, win_cond_place):
+def get_reward_for_changes(env_change, env_backward, win_cond_take, win_cond_place):
     step_reward = 0
-
     # Check if taken items were correct
     skip_actions = ['examine', 'open', 'close', 'look', 'inventory']
-    if env_change !=[]:   
-        if (env_change[0] in win_cond_take) or (env_change[0] in win_cond_place):
+    if env_change !=[]:
+        if (env_change[0][1] == "I" and env_backward[0] not in win_cond_place) or (env_change[0] in win_cond_place):
             step_reward += 1
         elif env_change[0][0] == "P" or [s for s in skip_actions if s in env_change[0][2]['label']]:
             step_reward = step_reward 
         else:
             step_reward -= 1
-
     return step_reward
 
+
 def simulate_environment_actions(prev_state, current_state, win_cond_take, win_cond_place):
-    env_change = find_changes(prev_state, current_state)
-    step_reward = get_reward_for_changes(env_change, win_cond_take, win_cond_place)
+    env_change, env_backward = find_changes(prev_state, current_state)
+    step_reward = get_reward_for_changes(env_change, env_backward, win_cond_take, win_cond_place)
     return step_reward
 
 
@@ -238,8 +238,8 @@ def observation_processing(text):
         cleaned_text = cleaned_text.replace("Livingroom", "Living room")   
     if 'Recipe #1' in cleaned_text:
         cleaned_text = cleaned_text.replace("Recipe #1", "Recipe") 
-
     return cleaned_text
+
 
 def top_k_obs(input_dict, k):
     # Sum values in each key's list
@@ -325,3 +325,43 @@ def action_deprocessing(action):
     if "grill" in action:
         action = action.replace("grill", "cook") 
     return action
+
+def process_thesises(response):
+    thesises = json.loads(response)["thesises"]
+    thesises = [
+        {"name": thesis["thesis"], "entities": thesis["entities"]} for thesis in thesises 
+    ]
+    return thesises
+
+def find_unexplored_exits_thesises(location, triplets, thesises):
+    exits = set()  # To store exits from the given location
+    explored_directions = set()  # To store directions that are explored
+
+    # First pass: Identify all exits from the location
+    for thesis in thesises:
+        if any(x in thesis for x in ['exit', 'lead', 'entr', 'path']) and location in thesis:
+            if 'north' in thesis:
+                exits.add('north')
+            if 'south' in thesis:
+                exits.add('south')
+            if 'east' in thesis:
+                exits.add('east')
+            if 'west' in thesis:
+                exits.add('west')  
+
+    # Second pass: Identify which exits are explored
+    for triplet in triplets:
+        elements = triplet.split(', ')
+        if elements[2] == location:
+            if len(elements[1].split(' ')) < 2:
+                continue
+            direction = elements[1].split(' ')[1]  # Get the direction part
+            if direction in exits:
+                explored_directions.add(direction)  # Mark this exit as explored
+
+    # Find unexplored exits by checking which exits are not in the explored directions
+    unexplored_exits = exits - explored_directions
+    output = list(unexplored_exits)
+    if unexplored_exits == set():
+        output = 'none'  
+    return output

@@ -4,7 +4,7 @@ ENV_NAMES = {
     "cook": "./envs/cook/game.z8",
     "cook_hard": "./envs/cook_hard/game.z8",
     "cook_rl_baseline": "./envs/cook_rl_baseline/game.z8",
-    "clean": "./envs/clean_3x3/clean_3x3_mess_1.z8",
+    "clean": "./envs/clean_3x3/clean_3x3_mess_2.z8",
 }
 
 FIRST_OBS = {
